@@ -4102,6 +4102,11 @@ body.textbig, .textbig th, .textbig td {
 
   border-radius: 10px 0 0 10px;
 }
+
+.rounded #menu li:first-child:hover a   { 
+
+  border-radius: 10px 0 0 0;
+}
             
 
 
