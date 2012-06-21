@@ -10,7 +10,7 @@
 defined('_JEXEC') or die;
 
 if (!empty($version)) :
-echo '<p align="center">' . str_replace('Joomla!', 'Square One', $version);
-if ($params->get('product', 1)) echo ' (_Joomla_! '.JVERSION.')';
+echo '<p align="center">' . str_replace('Joomla!', 'jLight', $version);
+if ($params->get('product', 1)) echo ' (Joomla! '.JVERSION.')';
 echo '</p>';
 endif;
