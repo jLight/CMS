@@ -11,7 +11,7 @@ defined('_JEXEC') or die;
 
 JHtml::addIncludePath(JPATH_COMPONENT.'/helpers/html');
 JHtml::_('behavior.tooltip');
-JHtml::core();
+JHtml::_('behavior.framework');
 
 // Create some shortcuts.
 $params		= &$this->item->params;
@@ -127,12 +127,12 @@ $listDirn	= $this->escape($this->state->get('list.direction'));
 							<?php $author =  $article->author ?>
 							<?php $author = ($article->created_by_alias ? $article->created_by_alias : $author);?>
 
-						<?php if (JComponentHelper::isEnabled('com_contact', true) && !empty($article->contactid ) &&  $this->params->get('link_author') == true):?>
-							<?php echo JHtml::_(
-									'link',
-									JRoute::_('index.php?option=com_contact&view=contact&id='.$article->contactid),
-									$author
-							); ?>
+							<?php if (!empty($article->contactid ) &&  $this->params->get('link_author') == true):?>
+								<?php echo JHtml::_(
+										'link',
+										JRoute::_('index.php?option=com_contact&view=contact&id='.$article->contactid),
+										$author
+								); ?>
 
 							<?php else :?>
 								<?php echo JText::sprintf('COM_CONTENT_WRITTEN_BY', $author); ?>

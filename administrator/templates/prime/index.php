@@ -49,7 +49,7 @@ if (file_exists($componentCSS)) : ?>
 
 </head>
 <body class="width jlight <?php echo $option?> <?php echo $view?> <?php echo $layout?> <?php echo $task?> background<?php if ($this->params->get('enableGradients')) : ?> gradients<?php endif; ?><?php if ($this->params->get('roundedCorners')) : ?> rounded<?php endif; ?><?php if ($this->params->get('dropShadow')) : ?> shadows<?php endif; ?><?php if ($this->params->get('textBig')) : ?> textbig<?php endif; ?> <?php echo $option?>_<?php echo $view?>_<?php echo $layout?>_<?php echo $task?>_page">  
-         <?php echo $group?>
+     
     	<div id="module-status">
 			<jdoc:include type="modules" name="status" />
 			<?php

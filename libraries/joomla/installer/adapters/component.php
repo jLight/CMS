@@ -1386,7 +1386,7 @@ class JInstallerComponent extends JAdapterInstance
 		$query->select('m.id, e.extension_id');
 		$query->from('#__menu AS m');
 		$query->leftJoin('#__extensions AS e ON m.component_id = e.extension_id');
-		//$query->where('m.parent_id = 1');
+		$query->where('m.parent_id = 1');
 		$query->where("m.client_id = 1");
 		$query->where('e.element = ' . $db->quote($option));
 
@@ -1397,20 +1397,18 @@ class JInstallerComponent extends JAdapterInstance
 		// Check if menu items exist
 		if ($componentrow)
 		{
-			
+
 			// Don't do anything if overwrite has not been enabled
 			if (!$this->parent->isOverwrite())
 			{
 				return true;
 			}
 
-			// Don't want to remove the customized menu anymore
-			
 			// Remove existing menu items if overwrite has been enabled
-			//if ($option)
-			//{
-			//	$this->_removeAdminMenus($componentrow); // If something goes wrong, theres no way to rollback TODO: Search for better solution
-			//}
+			if ($option)
+			{
+				$this->_removeAdminMenus($componentrow); // If something goes wrong, theres no way to rollback TODO: Search for better solution
+			}
 
 			$component_id = $componentrow->extension_id;
 		}
@@ -1430,21 +1428,16 @@ class JInstallerComponent extends JAdapterInstance
 		// Ok, now its time to handle the menus.  Start with the component root menu, then handle submenus.
 		$menuElement = $this->manifest->administration->menu;
 
-		if ($componentrow->id)
-		{
-			// Workaround to allow menu to keep customized menu structure
-			$parent_id = $componentrow->id;
-		}
-		elseif ($menuElement)
+		if ($menuElement)
 		{
 			$data = array();
-			$data['menutype'] = 'admin';
+			$data['menutype'] = 'main';
 			$data['client_id'] = 1;
 			$data['title'] = (string) $menuElement;
 			$data['alias'] = (string) $menuElement;
 			$data['link'] = 'index.php?option=' . $option;
 			$data['type'] = 'component';
-			$data['published'] = 1;
+			$data['published'] = 0;
 			$data['parent_id'] = 1;
 			$data['component_id'] = $component_id;
 			$data['img'] = ((string) $menuElement->attributes()->img) ? (string) $menuElement->attributes()->img : 'class:component';
@@ -1452,9 +1445,39 @@ class JInstallerComponent extends JAdapterInstance
 
 			if (!$table->setLocation(1, 'last-child') || !$table->bind($data) || !$table->check() || !$table->store())
 			{
-				// Install failed, warn user and rollback changes
-				JError::raiseWarning(1, $table->getError());
-				return false;
+				// The menu item already exists. Delete it and retry instead of throwing an error.
+				$query = $db->getQuery(true);
+				$query->select('id');
+				$query->from('#__menu');
+				$query->where('menutype = '.$db->quote('main'));
+				$query->where('client_id = 1');
+				$query->where('link = '.$db->quote('index.php?option='.$option));
+				$query->where('type = '.$db->quote('component'));
+				$query->where('parent_id = 1');
+				$query->where('home = 0');
+				
+				$db->setQuery($query);
+				$menu_id = $db->loadResult();
+				
+				if(!$menu_id) {
+					// Oops! Could not get the menu ID. Go back and rollback changes.
+					JError::raiseWarning(1, $table->getError());
+					return false;
+				} else {
+					// Remove the old menu item
+					$query = $db->getQuery(true);
+					$query->delete('#__menu');
+					$query->where('id = '.(int)$menu_id);
+					
+					$db->setQuery($query);
+					$db->query();
+					
+					// Retry creating the menu item
+					if (!$table->setLocation(1, 'last-child') || !$table->bind($data) || !$table->check() || !$table->store()) {
+						// Install failed, rollback changes
+						return false;
+					}
+				}
 			}
 
 			/*
@@ -1462,20 +1485,18 @@ class JInstallerComponent extends JAdapterInstance
 			 * so that if we have to rollback the changes we can undo it.
 			 */
 			$this->parent->pushStep(array('type' => 'menu', 'id' => $component_id));
-			
-			$parent_id = $table->id;
 		}
 		// No menu element was specified, Let's make a generic menu item
 		else
 		{
 			$data = array();
-			$data['menutype'] = 'admin';
+			$data['menutype'] = 'main';
 			$data['client_id'] = 1;
 			$data['title'] = $option;
 			$data['alias'] = $option;
 			$data['link'] = 'index.php?option=' . $option;
 			$data['type'] = 'component';
-			$data['published'] = 1;
+			$data['published'] = 0;
 			$data['parent_id'] = 1;
 			$data['component_id'] = $component_id;
 			$data['img'] = 'class:component';
@@ -1493,9 +1514,9 @@ class JInstallerComponent extends JAdapterInstance
 			 * so that if we have to rollback the changes we can undo it.
 			 */
 			$this->parent->pushStep(array('type' => 'menu', 'id' => $component_id));
-			
-			$parent_id = $table->id;
 		}
+
+		$parent_id = $table->id;
 
 		/*
 		 * Process SubMenus
@@ -1506,15 +1527,17 @@ class JInstallerComponent extends JAdapterInstance
 			return true;
 		}
 
+		$parent_id = $table->id;
+
 		foreach ($this->manifest->administration->submenu->menu as $child)
 		{
 			$data = array();
-			$data['menutype'] = 'admin';
+			$data['menutype'] = 'main';
 			$data['client_id'] = 1;
 			$data['title'] = (string) $child;
 			$data['alias'] = (string) $child;
 			$data['type'] = 'component';
-			$data['published'] = 1;
+			$data['published'] = 0;
 			$data['parent_id'] = $parent_id;
 			$data['component_id'] = $component_id;
 			$data['img'] = ((string) $child->attributes()->img) ? (string) $child->attributes()->img : 'class:component';
@@ -1562,19 +1585,7 @@ class JInstallerComponent extends JAdapterInstance
 				$qstring = (count($request)) ? '&' . implode('&', $request) : '';
 				$data['link'] = 'index.php?option=' . $option . $qstring;
 			}
-			
-			// For customized menus, we only want to add new submenu items, must first check
-			$query->clear();
-			$query->select('m.id');
-			$query->from('#__menu AS m');
-			$query->where('m.link = ' . $db->quote($data['link']))
-				  ->where('m.client_id = 1');
-			$db->setQuery($query);
-			if ($db->loadResult())
-			{
-				continue;
-			}
-			
+
 			$table = JTable::getInstance('menu');
 
 			if (!$table->setLocation($parent_id, 'last-child') || !$table->bind($data) || !$table->check() || !$table->store())

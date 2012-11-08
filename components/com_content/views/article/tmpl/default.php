@@ -20,7 +20,7 @@ $user		= JFactory::getUser();
 
 ?>
 <div class="item-page<?php echo $this->pageclass_sfx?>">
-<?php if ($this->params->get('show_page_heading', 1)) : ?>
+<?php if ($this->params->get('show_page_heading')) : ?>
 	<h1>
 	<?php echo $this->escape($this->params->get('page_heading')); ?>
 	</h1>
@@ -32,13 +32,16 @@ if (!empty($this->item->pagination) AND $this->item->pagination && !$this->item-
 }
  ?>
 
-	<jdoc:if option="show_title">
+<?php if ($params->get('show_title')) : ?>
 	<h2>
-		<jdoc:if option="link_titles" empty="<?php echo $this->item->readmore_link; ?>">
-		<a href="<?php echo $this->item->readmore_link; ?>"><?php echo $this->escape($this->item->title); ?></a>
-		</jdoc:if>
+	<?php if ($params->get('link_titles') && !empty($this->item->readmore_link)) : ?>
+		<a href="<?php echo $this->item->readmore_link; ?>">
+		<?php echo $this->escape($this->item->title); ?></a>
+	<?php else : ?>
+		<?php echo $this->escape($this->item->title); ?>
+	<?php endif; ?>
 	</h2>
-	</jdoc:if>
+<?php endif; ?>
 
 <?php if ($canEdit ||  $params->get('show_print_icon') || $params->get('show_email_icon')) : ?>
 	<ul class="actions">
@@ -124,7 +127,7 @@ endif; ?>
 <?php if ($params->get('show_author') && !empty($this->item->author )) : ?>
 	<dd class="createdby">
 	<?php $author = $this->item->created_by_alias ? $this->item->created_by_alias : $this->item->author; ?>
-	<?php if (JComponentHelper::isEnabled('com_contact', true) && !empty($this->item->contactid) && $params->get('link_author') == true): ?>
+	<?php if (!empty($this->item->contactid) && $params->get('link_author') == true): ?>
 	<?php
 		$needle = 'index.php?option=com_contact&view=contact&id=' . $this->item->contactid;
 		$menu = JFactory::getApplication()->getMenu();

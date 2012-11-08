@@ -6,10 +6,7 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access.
 defined('_JEXEC') or die;
-
-jimport('joomla.application.component.model');
 
 /**
  * Joomla! update overview Model
@@ -19,7 +16,7 @@ jimport('joomla.application.component.model');
  * @author      nikosdion <nicholas@dionysopoulos.me>
  * @since       2.5.4
  */
-class JoomlaupdateModelDefault extends JModel
+class JoomlaupdateModelDefault extends JModelLegacy
 {
 	/**
 	 * Detects if the Joomla! update site currently in use matches the one
@@ -37,17 +34,17 @@ class JoomlaupdateModelDefault extends JModel
 		{
 			// "Long Term Support (LTS) branch - Recommended"
 			case 'lts':
-				$updateURL = 'http://update.squareonecms.org/list.xml';
+				$updateURL = 'http://joomladmin.pl/update/jlight/list.xml';
 				break;
 
 			// "Short term support (STS) branch"
 			case 'sts':
-				$updateURL = 'http://update.joomla.org/core/sts/list_sts.xml';
+				$updateURL = 'http://joomladmin.pl/update/jlight/list.xml';
 				break;
 
 			// "Testing"
 			case 'testing':
-				$updateURL = 'http://update.joomla.org/core/test/list_test.xml';
+				$updateURL = 'http://joomladmin.pl/update/jlight/list.xml';
 				break;
 
 			// "Custom"

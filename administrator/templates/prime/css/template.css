@@ -2908,7 +2908,7 @@ a.jgrid:hover {
 .icon-32-refresh {
 	background-image: url(../images/toolbar/icon-32-refresh.png);
 }
-.icon-32-save-new {
+.icon-32-save-new, .icon-32-saveandnew {
 	background-image: url(../images/toolbar/icon-32-save-new.png);
 }
 .icon-32-save-copy {
@@ -3453,6 +3453,17 @@ ul.subext li {
 #sbox-window {
 	box-shadow: 0 0 100px rgba(0,0,0,0.6);
 }
+
+
+#sbox-overlay {
+	position: absolute;
+	background-color: #000;
+	left: 0px;
+	top: 0px;
+	right: 0;
+	bottom: 0;
+}
+
 h2.modal-title {
 	margin-left: 15px;
 	margin-bottom: 0;
@@ -4479,6 +4490,10 @@ div#cToolbar-box {
 #nav li.active .level1 > span, #nav li.level2.active .level2 > span {
 	color: #000
 }
+
+
+.com_zoo div.header { color: #666; }
+
 table.list tbody td, table.list tbody tr {
 	border: 0;
 	background: none;
